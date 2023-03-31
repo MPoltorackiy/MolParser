@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Josefin+Sans&family=Raleway&family=Montserrat:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="public/css/base.css" />
+    <link rel="stylesheet" href="public/css/zbcc.css" />
+    <link rel="stylesheet" href="public/css/hero.css" />
+    <link rel="stylesheet" href="public/css/summary.css" />
+    <link rel="stylesheet" href="public/css/query.css" />
+     
+  </head>
+
+  <body>
+    <main>
+    <center>
+     <h2 class="summary_title" style="color:black">Convert to Aplan Model</h2>
+    </center>
+    <!<input class="file-input" type="file" multiple id="file_verdict">
+    <div class='parent'>
+	    <div class='child' style= "width:90%; height:10%;"><label for="images" class="drop-container">
+		  <span class="drop-title">Drop files here</span>
+		  or
+		  <input class="file-input" type="file" multiple id="file_verdict">
+	    </label> 
+	    </div>
+	</div>
+   <div style="float:center">
+    <textarea id="mol-file" rows="30" cols="80" style="background:rgba(245, 240, 240, 0.7);color:black">
+    </textarea>
+    <textarea id="result-model" rows="30" cols="70" style="background:rgba(245, 240, 240, 0.7);color:black">
+    </textarea>
+   <div>
+      <section class='hero_section'>
+      <div id="chemViewer" rows="30" cols="87" 
+      style="background:rgba(245, 240, 240, 0.6);color:white; border-style: solid; border-width: 2px; border-color: WhiteSmoke; width: 90%; height: 300px; margin-top: 20px; margin-bottom: 20px; align: center" 
+      data-widget="Kekule.ChemWidget.Viewer" 
+      data-chem-obj="url(#molecule)">
+                 
+      </div>
+        <!-- Summary section -->
+        <section class="summary_section">   
+         
+          
+          <div class="summary_main_box">
+            
+          </div>
+          <button class="summary_submit_button" 
+          onclick="readFile(file_verdict)"
+          type="submit">Generation</button>
+        </section>
+
+        <!-- End of Summary section --> 
+        <script>
+         function readFile(object) { 
+          var result='';       
+          for (let i = 0; i < object.files.length; i++){
+           var file = object.files[i];
+           let reader = new FileReader();
+            reader.onload = function() { 
+             result+=reader.result;
+             $('#mol-file').val(result);
+             sendServer(result);
+             CreatingMoleculeAtomsBonds4(result);
+            } 
+          reader.readAsText(file);  
+          } 
+        }
+        function sendServer(data){
+          var json=JSON.stringify({
+      		type: "msg-data",
+      		data: data
+    	   });
+         sock.send(json);
+        }
+        
+        var sock = new WebSocket("ws://127.0.0.1:5005");
+	sock.onerror = function(error) {
+  	 console.log('WebSocket Error ' + error);
+        };
+
+	window.onbeforeunload = function() {
+  	 sock.onclose = function() {
+    	 //alert("close");
+  	  };
+  	 sock.close();
+        };
+
+	sock.onmessage = function(event){
+     	 var msg = JSON.parse(event.data);
+     	 
+     	 var strResult = msg.elments;
+     	 strResult+=msg.bonds;
+     	 strResult+=msg.nonBonds;
+     	 strResult+=msg.atomsNum;
+     	 
+     	 
+     	  $('#result-model').val(strResult);
+	 }
+	  
+      function CreatingMoleculeAtomsBonds4(data){
+       
+       var chemViewer = new Kekule.ChemWidget.Viewer(document.getElementById('chemViewer'));
+       var cmlData = data;
+       var myMolecule = Kekule.IO.loadFormatData(cmlData, 'mol');
+       chemViewer.setChemObj(myMolecule);
+
+       var molecule = chemViewer.getChemObj();
+
+       var cmlData = Kekule.IO.saveFormatData(obj, 'mol');
+       console.log(cmlData);
+	
+       }                    
+       </script>
+      </div>
+    </main>
+    <script src="public/lib/js/jquery.min.js"></script>
+    <script src="public/js/htmlTemplates.js"></script>
+    <script src="public/js/zbcc/functions.js"></script>
+    <script src="public/js/zbcc/htmlElements.js"></script>
+    <script src="public/js/zbcc/htmlTables.js"></script>
+    <script src="public/js/zbcc/constructor.js"></script>
+    <script src="public/js/zbcc/dataBlocks.js"></script>
+    <script src="public/js/main.js"></script>
+    <script src="public/js/kekule/kekule.js"></script>
+  </body>
+</html>
